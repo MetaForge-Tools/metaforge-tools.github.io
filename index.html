@@ -2,65 +2,80 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Pigrok | AI Content Studio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pigrok AI Studio</title>
+    <!-- استدعاء SDK الخاص بـ Pi -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <!-- تصميم متطور باستخدام Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0a0a0a; color: #e5e7eb; font-family: 'Segoe UI', sans-serif; }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+    </style>
 </head>
-<body class="bg-gray-950 text-white font-sans">
+<body class="min-h-screen">
 
-    <!-- التنقل -->
-    <nav class="p-4 border-b border-gray-800 flex justify-between">
-        <h1 class="text-2xl font-bold text-purple-500">Pigrok AI</h1>
-        <div id="user-status">جاري التحقق...</div>
-    </nav>
+    <!-- شريط المهام -->
+    <header class="glass-panel p-4 flex justify-between items-center sticky top-0">
+        <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">PIGROK AI</h1>
+        <div id="auth-status" class="text-sm px-3 py-1 rounded-full bg-purple-900/30">جارٍ الاتصال بـ Pi...</div>
+    </header>
 
-    <!-- واجهة العمل -->
-    <main class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-gray-900 p-6 rounded-xl">
-            <h2 class="text-xl mb-4">إنشاء محتوى</h2>
-            <button onclick="generateVideo()" class="w-full bg-purple-600 p-3 rounded mb-2">إنشاء فيديو من صورة</button>
-            <button onclick="upgradeAccount()" class="w-full bg-green-600 p-3 rounded">ترقية الحساب (Super Grok)</button>
-        </div>
+    <!-- منطقة العمل الرئيسية -->
+    <main class="max-w-5xl mx-auto p-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            
+            <!-- لوحة التحكم الجانبية -->
+            <aside class="glass-panel p-4 rounded-xl space-y-4">
+                <button onclick="switchTab('chat')" class="w-full p-2 text-right hover:bg-white/10 rounded">الدردشة الذكية</button>
+                <button onclick="switchTab('gen')" class="w-full p-2 text-right hover:bg-white/10 rounded">صناعة الفيديو</button>
+                <button onclick="processUpgrade()" class="w-full p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg font-bold">اشتراك Super Pigrok</button>
+            </aside>
 
-        <div class="col-span-2 bg-gray-900 p-6 rounded-xl">
-            <h2 class="text-xl mb-4">وكيل الذكاء الاصطناعي</h2>
-            <div id="chat-box" class="h-64 overflow-y-auto border border-gray-700 p-4 mb-4"></div>
-            <input type="text" id="prompt" placeholder="اكتب وصفك هنا..." class="w-full p-2 bg-gray-800 rounded">
+            <!-- منطقة العرض -->
+            <section id="workspace" class="col-span-3 glass-panel p-6 rounded-xl min-h-[400px]">
+                <h2 id="tab-title" class="text-2xl mb-4">مرحباً بك في Pigrok</h2>
+                <div id="content-area">اختر أداة للبدء في الإبداع.</div>
+            </section>
         </div>
     </main>
 
-    <!-- شروط وسياسات -->
-    <footer class="p-6 text-center text-sm text-gray-500">
-        <a href="#privacy">سياسة الخصوصية</a> | <a href="#terms">شروط الخدمة</a> | <a href="#refund">سياسة رد الأموال</a>
-    </footer>
-
     <script>
-        // تهيئة Pi SDK
+        // 1. تهيئة النظام
         const Pi = window.Pi;
         Pi.init({ version: "2.0", sandbox: true });
 
-        // التحقق من المستخدم
-        async function auth() {
-            const user = await Pi.authenticate(['username'], () => { alert("خطأ في الاتصال"); });
-            document.getElementById('user-status').innerText = "مرحباً: " + user.user.username;
-        }
-        auth();
-
-        // نظام الدفع للترقية
-        async function upgradeAccount() {
+        // 2. نظام التحقق
+        async function authenticate() {
             try {
-                await Pi.createPayment({
-                    amount: 10,
-                    memo: "Super Pigrok Upgrade",
-                    metadata: { type: "upgrade" }
-                }, {
-                    onReadyForServerCompletion: () => alert("تمت الترقية بنجاح!"),
-                    onCancel: () => alert("تم إلغاء العملية")
+                const user = await Pi.authenticate(['username'], () => {
+                    document.getElementById('auth-status').innerText = "فشل التحقق";
                 });
-            } catch (e) { alert("حدث خطأ في الدفع"); }
+                document.getElementById('auth-status').innerText = "مرحباً: " + user.user.username;
+            } catch (e) { console.error(e); }
         }
 
-        function generateVideo() { alert("جاري الاتصال بمحرك الفيديو..."); }
+        // 3. نظام الدفع المتكامل (المرحلة 10)
+        async function processUpgrade() {
+            try {
+                const payment = await Pi.createPayment({
+                    amount: 10,
+                    memo: "Upgrade to Pigrok Premium",
+                    metadata: { type: "premium_access" }
+                }, {
+                    onReadyForServerCompletion: (id, txid) => alert("تم تفعيل حسابك بنجاح! رقم المعاملة: " + txid),
+                    onCancel: () => alert("تم إلغاء الدفع"),
+                    onError: (err) => alert("خطأ: " + err)
+                });
+            } catch (e) { alert("تأكد أنك تستخدم تطبيق Pi Browser"); }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('content-area').innerHTML = tab === 'chat' ? "جارٍ تشغيل محرك الدردشة..." : "جارٍ تحميل أدوات الفيديو...";
+        }
+
+        // تشغيل التحقق عند التحميل
+        authenticate();
     </script>
 </body>
 </html>
