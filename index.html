@@ -2,133 +2,70 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pigrok | AI</title>
-    <!-- تحميل Pi SDK -->
+    <title>Pigrok AI</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <!-- تحميل Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- أيقونات -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ألوان وتصميم شبيه بـ Grok */
-        body { background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; overflow: hidden; }
-        .sidebar { background-color: #111111; border-left: 1px solid #333; }
-        .chat-container { height: calc(100vh - 140px); overflow-y: auto; }
-        .input-box { background-color: #222222; border: 1px solid #444; border-radius: 24px; }
-        .input-box input { background: transparent; border: none; outline: none; color: white; width: 100%; }
-        .btn-upgrade { background: linear-gradient(90deg, #8b5cf6, #d946ef); }
-        /* سكرول بار مخفي */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        body { background: #000; color: #fff; font-family: sans-serif; }
+        .chat-area { height: 75vh; overflow-y: auto; }
+        .glass { background: #111; border: 1px solid #333; }
     </style>
 </head>
-<body class="flex h-screen">
+<body class="flex flex-col h-screen">
 
-    <!-- القائمة الجانبية (Sidebar) -->
-    <aside class="sidebar w-64 p-4 flex flex-col justify-between hidden md:flex">
-        <div>
-            <h1 class="text-2xl font-bold mb-8 text-white"><i class="fa-solid fa-bolt text-purple-500"></i> Pigrok</h1>
-            <button class="w-full text-right p-3 rounded-lg bg-white/10 hover:bg-white/20 transition mb-2">
-                <i class="fa-solid fa-plus ml-2"></i> دردشة جديدة
-            </button>
-            <button class="w-full text-right p-3 rounded-lg hover:bg-white/10 transition text-gray-400">
-                <i class="fa-solid fa-video ml-2"></i> صانع الفيديو
-            </button>
-        </div>
-        
-        <div>
-            <div id="user-info" class="text-sm text-gray-400 mb-4 px-2">
-                <i class="fa-solid fa-circle-notch fa-spin"></i> جاري ربط المحفظة...
-            </div>
-            <button onclick="upgradePigrok()" class="btn-upgrade w-full p-3 rounded-xl font-bold text-white shadow-lg hover:opacity-90 transition">
-                ترقية Super Pigrok
-            </button>
-        </div>
-    </aside>
+    <header class="p-4 border-b border-gray-800 flex justify-between items-center">
+        <h1 class="font-bold text-xl tracking-tight">PIGROK <span class="text-purple-500">⚡</span></h1>
+        <div id="pi-auth" class="text-xs text-gray-400">جاري الاتصال بـ Pi...</div>
+    </header>
 
-    <!-- منطقة الدردشة الرئيسية -->
-    <main class="flex-1 flex flex-col relative">
-        <!-- الهيدر للموبايل -->
-        <header class="md:hidden p-4 border-b border-gray-800 flex justify-between items-center bg-[#111]">
-            <h1 class="text-xl font-bold"><i class="fa-solid fa-bolt text-purple-500"></i> Pigrok</h1>
-            <button onclick="upgradePigrok()" class="text-sm btn-upgrade px-3 py-1 rounded-full font-bold">ترقية</button>
-        </header>
+    <div id="chat-box" class="chat-area p-4 flex-1">
+        <div class="text-gray-500 text-center mt-10">Pigrok AI جاهز للخدمة. اسألني أي شيء.</div>
+    </div>
 
-        <!-- رسالة الترحيب -->
-        <div id="chat-area" class="chat-container p-4 flex flex-col items-center justify-center">
-            <i class="fa-solid fa-bolt text-6xl text-gray-800 mb-4"></i>
-            <h2 class="text-2xl font-semibold mb-2 text-gray-300">كيف يمكنني مساعدتك اليوم؟</h2>
-            <p class="text-gray-500 text-sm">Pigrok الذكاء الاصطناعي الأقوى بين يديك</p>
+    <div class="p-4 bg-black border-t border-gray-800">
+        <div class="flex gap-2">
+            <input id="user-input" type="text" placeholder="اكتب سؤالك لـ Pigrok..." class="flex-1 bg-gray-900 p-3 rounded-lg outline-none border border-gray-700">
+            <button onclick="handleSend()" class="bg-purple-600 px-6 py-2 rounded-lg font-bold">إرسال</button>
         </div>
-
-        <!-- مربع الإدخال (Input Box) -->
-        <div class="absolute bottom-0 w-full p-4 bg-gradient-to-t from-black to-transparent">
-            <div class="max-w-3xl mx-auto input-box flex items-center p-2 px-4 shadow-2xl">
-                <i class="fa-solid fa-paperclip text-gray-400 cursor-pointer hover:text-white ml-3"></i>
-                <input type="text" placeholder="اسأل Pigrok أي شيء..." class="p-2 text-lg">
-                <button class="bg-white text-black rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-200">
-                    <i class="fa-solid fa-arrow-up"></i>
-                </button>
-            </div>
-            <p class="text-center text-xs text-gray-600 mt-3">Pigrok يمكن أن يرتكب أخطاء. يرجى التحقق من المعلومات المهمة.</p>
-        </div>
-    </main>
+        <button onclick="upgrade()" class="w-full mt-2 text-xs text-purple-400 underline">ترقية الحساب (Super Pigrok)</button>
+    </div>
 
     <script>
-        // التأكد من تحميل الصفحة بالكامل قبل استدعاء Pi SDK
-        document.addEventListener("DOMContentLoaded", function() {
-            
-            const checkPiInterval = setInterval(() => {
-                if (typeof window.Pi !== 'undefined') {
-                    clearInterval(checkPiInterval);
-                    initPiNetwork();
-                }
-            }, 500);
+        // تهيئة Pi
+        window.Pi.init({ version: "2.0", sandbox: true });
 
-            async function initPiNetwork() {
-                try {
-                    const Pi = window.Pi;
-                    Pi.init({ version: "2.0", sandbox: true });
-
-                    // التحقق من المستخدم
-                    Pi.authenticate(['username'], onIncompletePaymentFound)
-                        .then(function(auth) {
-                            document.getElementById('user-info').innerHTML = `<i class="fa-solid fa-user text-green-400 ml-2"></i> @${auth.user.username}`;
-                        })
-                        .catch(function(error) {
-                            console.error(error);
-                            document.getElementById('user-info').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500 ml-2"></i> فشل الاتصال`;
-                        });
-                } catch (err) {
-                    console.error("Pi SDK Error:", err);
-                }
-            }
-
-            // دالة معالجة الدفعات المعلقة (إلزامية في Pi SDK)
-            function onIncompletePaymentFound(payment) {
-                console.log("دفعة معلقة:", payment);
-            }
+        // التحقق من الهوية
+        window.Pi.authenticate(['username'], () => {}).then(auth => {
+            document.getElementById('pi-auth').innerText = "@" + auth.user.username;
         });
 
-        // دالة الدفع عند الضغط على زر الترقية
-        function upgradePigrok() {
-            if (typeof window.Pi === 'undefined') {
-                alert("لم يتم تحميل Pi SDK بشكل صحيح. يرجى الانتظار أو إعادة تحميل الصفحة.");
-                return;
-            }
+        // محرك الدردشة
+        function handleSend() {
+            const input = document.getElementById('user-input');
+            const box = document.getElementById('chat-box');
+            if(!input.value) return;
 
-            const Pi = window.Pi;
-            Pi.createPayment({
+            // إضافة رسالة المستخدم
+            box.innerHTML += `<div class="mb-4 text-right"><b>أنت:</b> ${input.value}</div>`;
+            
+            // رد وهمي من الذكاء الاصطناعي (يجب ربطه بـ API لاحقاً)
+            setTimeout(() => {
+                box.innerHTML += `<div class="mb-4 text-purple-400"><b>Pigrok:</b> أنا هنا لتحليل طلبك. هذه نسخة Pigrok التجريبية.</div>`;
+                box.scrollTop = box.scrollHeight;
+            }, 1000);
+            
+            input.value = '';
+        }
+
+        // نظام الدفع
+        function upgrade() {
+            window.Pi.createPayment({
                 amount: 10,
-                memo: "Super Pigrok Subscription",
-                metadata: { feature: "AI_Video_Chat" }
+                memo: "Premium Access",
+                metadata: { type: "upgrade" }
             }, {
-                onReadyForServerApproval: function(paymentId) { console.log("جاهز للموافقة:", paymentId); },
-                onReadyForServerCompletion: function(paymentId, txid) { alert("تم تفعيل Super Pigrok بنجاح!"); },
-                onCancel: function(paymentId) { console.log("تم الإلغاء"); },
-                onError: function(error, payment) { console.error("خطأ في الدفع:", error); alert("حدث خطأ أثناء الاتصال بالمحفظة."); }
+                onReadyForServerCompletion: () => alert("تم التفعيل بنجاح!"),
+                onCancel: () => alert("تم الإلغاء")
             });
         }
     </script>
