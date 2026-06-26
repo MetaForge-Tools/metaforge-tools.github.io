@@ -1,4 +1,35 @@
-https://sdk.minepi.com/pi-sdk.js
+// كود الربط مع Pi Payment SDK لمعالجة المعاملة
+async function processPigrokUpgrade() {
+  const paymentData = {
+    amount: 10, // القيمة المطلوبة للترقية
+    memo: "Upgrade to Super Pigrok", // وصف العملية
+    metadata: { accountId: "user_123" }, // بيانات إضافية
+  };
+
+  const callbacks = {
+    onReadyForServerApproval: (paymentId) => {
+      console.log("العملية جاهزة للموافقة من السيرفر:", paymentId);
+      // هنا يجب إرسال paymentId إلى السيرفر الخاص بك للتأكد من صحته
+    },
+    onReadyForServerCompletion: (paymentId, txid) => {
+      console.log("تمت العملية بنجاح! رقم المعاملة:", txid);
+      // هنا تمنح المستخدم مميزات Super Pigrok
+    },
+    onCancel: () => {
+      console.log("تم إلغاء عملية الدفع من قبل المستخدم");
+    },
+    onError: (error) => {
+      console.error("حدث خطأ في عملية الدفع:", error);
+    },
+  };
+
+  try {
+    // استدعاء واجهة الدفع الخاصة بـ Pi
+    window.Pi.createPayment(paymentData, callbacks);
+  } catch (err) {
+    console.error("فشل في تهيئة الدفع:", err);
+  }
+}https://sdk.minepi.com/pi-sdk.js
 <!-- سكريبت باش الموقع يتواصل مع باي -->
 <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
