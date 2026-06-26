@@ -1,73 +1,34 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <title>Pigrok AI</title>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: #000; color: #fff; font-family: sans-serif; }
-        .chat-area { height: 75vh; overflow-y: auto; }
-        .glass { background: #111; border: 1px solid #333; }
-    </style>
-</head>
-<body class="flex flex-col h-screen">
+async function handleSend() {
+    const input = document.getElementById('user-input');
+    const box = document.getElementById('chat-box');
+    const message = input.value;
+    
+    if(!message) return;
 
-    <header class="p-4 border-b border-gray-800 flex justify-between items-center">
-        <h1 class="font-bold text-xl tracking-tight">PIGROK <span class="text-purple-500">⚡</span></h1>
-        <div id="pi-auth" class="text-xs text-gray-400">جاري الاتصال بـ Pi...</div>
-    </header>
+    // 1. إضافة رسالتك فوراً
+    box.innerHTML += `<div class="mb-4 text-right"><b>أنت:</b> ${message}</div>`;
+    input.value = '';
+    box.scrollTop = box.scrollHeight;
 
-    <div id="chat-box" class="chat-area p-4 flex-1">
-        <div class="text-gray-500 text-center mt-10">Pigrok AI جاهز للخدمة. اسألني أي شيء.</div>
-    </div>
+    // 2. إظهار حالة "جاري التفكير"
+    const loaderId = 'loader-' + Date.now();
+    box.innerHTML += `<div id="${loaderId}" class="mb-4 text-gray-500">Pigrok يحلل...</div>`;
 
-    <div class="p-4 bg-black border-t border-gray-800">
-        <div class="flex gap-2">
-            <input id="user-input" type="text" placeholder="اكتب سؤالك لـ Pigrok..." class="flex-1 bg-gray-900 p-3 rounded-lg outline-none border border-gray-700">
-            <button onclick="handleSend()" class="bg-purple-600 px-6 py-2 rounded-lg font-bold">إرسال</button>
-        </div>
-        <button onclick="upgrade()" class="w-full mt-2 text-xs text-purple-400 underline">ترقية الحساب (Super Pigrok)</button>
-    </div>
-
-    <script>
-        // تهيئة Pi
-        window.Pi.init({ version: "2.0", sandbox: true });
-
-        // التحقق من الهوية
-        window.Pi.authenticate(['username'], () => {}).then(auth => {
-            document.getElementById('pi-auth').innerText = "@" + auth.user.username;
+    try {
+        // 3. ربط المحرك (هذا هو الجزء الذي يحول النظام من "جامد" إلى "ذكي")
+        // ملاحظة: لكي يعمل هذا، يجب أن تضع رابط الـ Backend الخاص بك هنا
+        const response = await fetch('https://api.your-ai-engine.com/v1/chat', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: message })
         });
-
-        // محرك الدردشة
-        function handleSend() {
-            const input = document.getElementById('user-input');
-            const box = document.getElementById('chat-box');
-            if(!input.value) return;
-
-            // إضافة رسالة المستخدم
-            box.innerHTML += `<div class="mb-4 text-right"><b>أنت:</b> ${input.value}</div>`;
-            
-            // رد وهمي من الذكاء الاصطناعي (يجب ربطه بـ API لاحقاً)
-            setTimeout(() => {
-                box.innerHTML += `<div class="mb-4 text-purple-400"><b>Pigrok:</b> أنا هنا لتحليل طلبك. هذه نسخة Pigrok التجريبية.</div>`;
-                box.scrollTop = box.scrollHeight;
-            }, 1000);
-            
-            input.value = '';
-        }
-
-        // نظام الدفع
-        function upgrade() {
-            window.Pi.createPayment({
-                amount: 10,
-                memo: "Premium Access",
-                metadata: { type: "upgrade" }
-            }, {
-                onReadyForServerCompletion: () => alert("تم التفعيل بنجاح!"),
-                onCancel: () => alert("تم الإلغاء")
-            });
-        }
-    </script>
-</body>
-</html>
+        
+        const result = await response.json();
+        
+        // 4. استبدال "جاري التحليل" برد الذكاء الاصطناعي الحقيقي
+        document.getElementById(loaderId).innerHTML = `<b>Pigrok:</b> ${result.reply}`;
+    } catch (e) {
+        document.getElementById(loaderId).innerHTML = `<b class="text-red-500">خطأ في الاتصال بالمحرك. يرجى التأكد من السيرفر.</b>`;
+    }
+    box.scrollTop = box.scrollHeight;
+}
