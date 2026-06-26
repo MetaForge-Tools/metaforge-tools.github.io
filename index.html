@@ -1,3 +1,30 @@
+<!-- سكريبت باش الموقع يتواصل مع باي -->
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+<!-- زر الدفع -->
+<button onclick="payWithPi()">شراء بـ Pi</button>
+
+<!-- كود جافاسكريبت اللي كيفتح المحفظة -->
+<script>
+async function payWithPi() {
+  const paymentData = {
+    amount: 1, // شحال باغي تطلب (دير 1 للتجربة)
+    memo: "تجربة دفع على تطبيق P.comerce",
+    metadata: { orderId: "123456" }
+  };
+
+  try {
+    const payment = await Pi.createPayment(paymentData, {
+      onReadyForServerApproval: (paymentId) => { console.log("تم إنشاء الطلب:", paymentId); },
+      onReadyForServerCompletion: (paymentId, txid) => { console.log("تمت العملية بنجاح:", txid); },
+      onCancel: (paymentId) => { console.log("تم إلغاء الدفع"); },
+      onError: (error, payment) => { console.log("وقع خطأ:", error); }
+    });
+  } catch (err) {
+    console.error("مشكلة:", err);
+  }
+}
+</script>
 https://sdk.minepi.com/pi-sdk.js<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
