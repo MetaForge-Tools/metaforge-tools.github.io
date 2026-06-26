@@ -1,176 +1,66 @@
-// كود الربط مع Pi Payment SDK لمعالجة المعاملة
-async function processPigrokUpgrade() {
-  const paymentData = {
-    amount: 10, // القيمة المطلوبة للترقية
-    memo: "Upgrade to Super Pigrok", // وصف العملية
-    metadata: { accountId: "user_123" }, // بيانات إضافية
-  };
-
-  const callbacks = {
-    onReadyForServerApproval: (paymentId) => {
-      console.log("العملية جاهزة للموافقة من السيرفر:", paymentId);
-      // هنا يجب إرسال paymentId إلى السيرفر الخاص بك للتأكد من صحته
-    },
-    onReadyForServerCompletion: (paymentId, txid) => {
-      console.log("تمت العملية بنجاح! رقم المعاملة:", txid);
-      // هنا تمنح المستخدم مميزات Super Pigrok
-    },
-    onCancel: () => {
-      console.log("تم إلغاء عملية الدفع من قبل المستخدم");
-    },
-    onError: (error) => {
-      console.error("حدث خطأ في عملية الدفع:", error);
-    },
-  };
-
-  try {
-    // استدعاء واجهة الدفع الخاصة بـ Pi
-    window.Pi.createPayment(paymentData, callbacks);
-  } catch (err) {
-    console.error("فشل في تهيئة الدفع:", err);
-  }
-}https://sdk.minepi.com/pi-sdk.js
-<!-- سكريبت باش الموقع يتواصل مع باي -->
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-<!-- زر الدفع -->
-<button onclick="payWithPi()">شراء بـ Pi</button>
-
-<!-- كود جافاسكريبت اللي كيفتح المحفظة -->
-<script>
-async function payWithPi() {
-  const paymentData = {
-    amount: 1, // شحال باغي تطلب (دير 1 للتجربة)
-    memo: "تجربة دفع على تطبيق P.comerce",
-    metadata: { orderId: "123456" }
-  };
-
-  try {
-    const payment = await Pi.createPayment(paymentData, {
-      onReadyForServerApproval: (paymentId) => { console.log("تم إنشاء الطلب:", paymentId); },
-      onReadyForServerCompletion: (paymentId, txid) => { console.log("تمت العملية بنجاح:", txid); },
-      onCancel: (paymentId) => { console.log("تم إلغاء الدفع"); },
-      onError: (error, payment) => { console.log("وقع خطأ:", error); }
-    });
-  } catch (err) {
-    console.error("مشكلة:", err);
-  }
-}
-</script>
-https://sdk.minepi.com/pi-sdk.js<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام التجارة العادلة | P-ECOSYSTEM</title>
-    
+    <title>Pigrok | AI Content Studio</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script>
-        try {
-            Pi.init({ version: "2.0", sandbox: true });
-        } catch(e) { console.error(e); }
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
-        body { font-family: 'Cairo', sans-serif; background: #ffffff; color: #1a1a1a; }
-        .ad-space { background: #f9f9f9; border: 1px solid #eeeeee; text-align: center; color: #999; }
-        .shelf-title { border-right: 5px solid #2563eb; padding-right: 15px; margin: 20px 0; font-weight: 900; font-size: 1.5rem; }
-    </style>
 </head>
-<body>
-    <div class="ad-space py-8 w-full">مساحة إعلانية علوية لتمويل المشروع</div>
+<body class="bg-gray-950 text-white font-sans">
 
-    <nav class="bg-blue-900 text-white p-6 shadow-md">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-3xl font-black">P-COMERCE</h1>
-            <input type="text" placeholder="البحث عن الرزق الحلال (عقارات، كتب، سيارات...)" class="w-1/3 p-3 rounded-lg text-black outline-none focus:ring-4 focus:ring-yellow-500">
-            <div class="space-x-4">
-                <button onclick="showSection('market')" class="mx-2">الرئيسية</button>
-                <button onclick="showSection('market')" class="mx-2">السوق</button>
-                <button onclick="showSection('policy')" class="mx-2">القانون والخصوصية</button>
-                <button onclick="showSection('admin')" class="bg-yellow-500 text-black px-4 py-2 rounded font-bold">لوحة المسؤول</button>
-            </div>
-        </div>
+    <!-- التنقل -->
+    <nav class="p-4 border-b border-gray-800 flex justify-between">
+        <h1 class="text-2xl font-bold text-purple-500">Pigrok AI</h1>
+        <div id="user-status">جاري التحقق...</div>
     </nav>
 
-    <main class="container mx-auto p-4">
-        <section id="policy" class="hidden py-10">
-            <h2 class="text-4xl font-black mb-6">ميثاق النظام والخصوصية</h2>
-            <div class="prose max-w-none text-xl leading-relaxed text-gray-700 space-y-4">
-                <p>1. **الأمانة الفكرية:** هذا المشروع ملكية شخصية تهدف لإرساء قيم النبل والإنسانية.</p>
-                <p>2. **الخصوصية:** لا نطلب كلمات سر، لا نخزن بيانات خاصة، المصادقة تتم عبر بروتوكول Pi الرسمي فقط.</p>
-                <p>3. **الحلال المطلق:** يمنع بيع المحرمات أو الغش في الأوزان والأسعار.</p>
-            </div>
-        </section>
+    <!-- واجهة العمل -->
+    <main class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-900 p-6 rounded-xl">
+            <h2 class="text-xl mb-4">إنشاء محتوى</h2>
+            <button onclick="generateVideo()" class="w-full bg-purple-600 p-3 rounded mb-2">إنشاء فيديو من صورة</button>
+            <button onclick="upgradeAccount()" class="w-full bg-green-600 p-3 rounded">ترقية الحساب (Super Grok)</button>
+        </div>
 
-        <section id="market" class="py-10">
-            <h2 class="shelf-title text-blue-900">أجنحة المنتجات الرقمية</h2>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10 text-center">
-                <div class="p-6 border rounded shadow-sm hover:shadow-md transition cursor-pointer">كتب إلكترونية</div>
-                <div class="p-6 border rounded shadow-sm hover:shadow-md transition cursor-pointer">تطبيقات</div>
-                <div class="p-6 border rounded shadow-sm hover:shadow-md transition cursor-pointer">أدوات برمجية</div>
-                <div class="p-6 border rounded shadow-sm hover:shadow-md transition cursor-pointer">أكواد</div>
-                <div class="p-6 border rounded shadow-sm hover:shadow-md transition cursor-pointer">قوالب</div>
-                <div class="p-6 border rounded shadow-sm hover:shadow-md transition cursor-pointer">شعارات</div>
-            </div>
-
-            <h2 class="shelf-title text-green-700">أجنحة المنتجات الملموسة</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div class="p-4 border rounded shadow-sm">عقارات</div>
-                <div class="p-4 border rounded shadow-sm">سيارات</div>
-                <div class="p-4 border rounded shadow-sm">أواني منزلية</div>
-                <div class="p-4 border rounded shadow-sm">أدوات كهربائية</div>
-                <div class="p-4 border rounded shadow-sm">أدوات مائية</div>
-                <div class="p-4 border rounded shadow-sm">كتب ملموسة</div>
-                <div class="p-4 border rounded shadow-sm">تجميل</div>
-                <div class="p-4 border rounded shadow-sm">ملابس</div>
-                <div class="p-4 border rounded shadow-sm">أحذية</div>
-                <div class="p-4 border rounded shadow-sm">هواتف وحواسب</div>
-                <div class="p-4 border rounded shadow-sm">ساعات ومجوهرات</div>
-                <div class="p-4 border rounded shadow-sm">خضر وفواكه</div>
-            </div>
-        </section>
-
-        <section id="admin" class="hidden py-10 bg-gray-50 p-8 rounded-2xl border-t-8 border-yellow-500">
-            <h2 class="text-3xl font-black mb-8">غرفة القيادة (المسؤول)</h2>
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <input type="text" placeholder="اسم المنتج" class="w-full p-4 border rounded">
-                    <select class="w-full p-4 border rounded"><option>اختر الرف...</option></select>
-                    <input type="number" placeholder="السعر بالـ Pi" class="w-full p-4 border rounded">
-                    <button class="w-full bg-blue-900 text-white py-4 rounded-xl font-black">نشر المنتج في السوق</button>
-                </div>
-                <div class="ad-space h-full flex items-center justify-center">حوض إعلاني داخلي للمسؤول</div>
-            </div>
-        </section>
+        <div class="col-span-2 bg-gray-900 p-6 rounded-xl">
+            <h2 class="text-xl mb-4">وكيل الذكاء الاصطناعي</h2>
+            <div id="chat-box" class="h-64 overflow-y-auto border border-gray-700 p-4 mb-4"></div>
+            <input type="text" id="prompt" placeholder="اكتب وصفك هنا..." class="w-full p-2 bg-gray-800 rounded">
+        </div>
     </main>
 
-    <footer class="mt-20 border-t p-10 bg-white">
-        <div class="grid md:grid-cols-2 gap-4">
-            <div class="ad-space h-24">إعلان سفلي A</div>
-            <div class="ad-space h-24">إعلان سفلي B</div>
-        </div>
-        <p class="text-center mt-10 text-gray-400 italic">"رَبِّ اجْعَلْ هَذَا بَلَدًا آمِنًا وَارْزُقْ أَهْلَهُ مِنَ الثَّمَرَاتِ"</p>
+    <!-- شروط وسياسات -->
+    <footer class="p-6 text-center text-sm text-gray-500">
+        <a href="#privacy">سياسة الخصوصية</a> | <a href="#terms">شروط الخدمة</a> | <a href="#refund">سياسة رد الأموال</a>
     </footer>
 
     <script>
-        function showSection(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            const target = document.getElementById(id);
-            if(target) target.classList.remove('hidden');
-            window.scrollTo(0,0);
+        // تهيئة Pi SDK
+        const Pi = window.Pi;
+        Pi.init({ version: "2.0", sandbox: true });
+
+        // التحقق من المستخدم
+        async function auth() {
+            const user = await Pi.authenticate(['username'], () => { alert("خطأ في الاتصال"); });
+            document.getElementById('user-status').innerText = "مرحباً: " + user.user.username;
+        }
+        auth();
+
+        // نظام الدفع للترقية
+        async function upgradeAccount() {
+            try {
+                await Pi.createPayment({
+                    amount: 10,
+                    memo: "Super Pigrok Upgrade",
+                    metadata: { type: "upgrade" }
+                }, {
+                    onReadyForServerCompletion: () => alert("تمت الترقية بنجاح!"),
+                    onCancel: () => alert("تم إلغاء العملية")
+                });
+            } catch (e) { alert("حدث خطأ في الدفع"); }
         }
 
-        // تسجيل الدخول آليا
-        async function login() {
-            try {
-                await Pi.authenticate(['username', 'payments'], function(p){});
-            } catch(e) {}
-        }
-        login();
+        function generateVideo() { alert("جاري الاتصال بمحرك الفيديو..."); }
     </script>
 </body>
 </html>
