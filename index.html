@@ -3,79 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>P.ai Creator</title>
+  <title>P.ai Creator - منصة الذكاء الاصطناعي</title>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      background: linear-gradient(135deg, #0a0a0a, #1a1a2e); 
-      color: #fff; 
-      text-align: center; 
-      padding: 40px 20px; 
-      min-height: 100vh;
-    }
-    h1 { color: #f4a261; margin-bottom: 10px; }
-    button { 
-      padding: 15px 30px; 
-      margin: 12px; 
-      font-size: 17px; 
-      background: #f4a261; 
-      color: black; 
-      border: none; 
-      border-radius: 12px; 
-      cursor: pointer;
-    }
-    #status { 
-      margin: 25px auto; 
-      padding: 15px; 
-      background: rgba(255,255,255,0.1); 
-      border-radius: 10px; 
-      max-width: 400px;
-    }
+    body { font-family: Arial, sans-serif; background: #0f0f1a; color: #eee; margin: 0; padding: 0; }
+    header { background: #1a1a2e; padding: 15px; text-align: center; }
+    nav { background: #16213e; padding: 10px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+    button { padding: 10px 18px; background: #f4a261; color: black; border: none; border-radius: 8px; cursor: pointer; }
+    .section { display: none; padding: 20px; }
+    .active { display: block; }
   </style>
 </head>
 <body>
-  <h1>P.ai Creator</h1>
-  <p>منصة الذكاء الاصطناعي لصناعة المحتوى</p>
+  <header>
+    <h1>P.ai Creator</h1>
+    <p>منصة الذكاء الاصطناعي الشاملة</p>
+  </header>
 
-  <button onclick="loginWithPi()">تسجيل الدخول بحساب Pi</button>
-  <button onclick="showUserInfo()" id="userBtn" style="display:none;">عرض معلوماتي</button>
+  <nav>
+    <button onclick="showSection('home')">الرئيسية</button>
+    <button onclick="showSection('chat')">دردشة AI</button>
+    <button onclick="showSection('image')">توليد صور</button>
+    <button onclick="showSection('video')">توليد فيديو</button>
+    <button onclick="showSection('library')">مكتبتي</button>
+    <button onclick="showSection('subscribe')">الاشتراكات</button>
+  </nav>
 
-  <div id="status"></div>
+  <!-- Home -->
+  <div id="home" class="section active">
+    <h2>مرحباً بك في P.ai Creator</h2>
+    <p>أنشئ محتوى احترافي بقوة الذكاء الاصطناعي</p>
+  </div>
+
+  <!-- AI Chat -->
+  <div id="chat" class="section">
+    <h2>خبير الدردشة</h2>
+    <input type="text" id="chatInput" placeholder="اكتب رسالتك..." style="width:80%; padding:10px;">
+    <button onclick="sendMessage()">إرسال</button>
+    <div id="chatOutput"></div>
+  </div>
+
+  <!-- باقي الأقسام فارغة الآن وسوف نملأها تدريجياً -->
+
+  <div id="status" style="text-align:center; margin:20px;"></div>
 
   <script>
     Pi.init({ version: "2.0", sandbox: true });
     let currentUser = null;
 
-    async function loginWithPi() {
-      const status = document.getElementById('status');
-      status.innerHTML = "جاري تسجيل الدخول...";
-
+    async function login() {
       try {
-        const auth = await Pi.authenticate(['username']);
+        const auth = await Pi.authenticate(['username', 'payments']);
         currentUser = auth;
-
-        status.innerHTML = `
-          ✅ <strong>تم تسجيل الدخول بنجاح!</strong><br><br>
-          <strong>اسم المستخدم:</strong> ${auth.user.username}<br>
-          <strong>الرقم:</strong> ${auth.user.uid}
-        `;
-
-        document.getElementById('userBtn').style.display = 'inline-block';
-      } catch (err) {
-        status.innerHTML = `❌ خطأ: ${err.message || err}`;
-      }
+        document.getElementById('status').innerHTML = `✅ مرحباً ${auth.user.username}`;
+      } catch(e) {}
     }
 
-    function showUserInfo() {
-      const status = document.getElementById('status');
-      if (currentUser) {
-        status.innerHTML = `
-          مرحباً <strong>${currentUser.user.username}</strong> 👋<br><br>
-          التطبيق يعمل الآن!<br>
-          يمكننا إضافة ميزات جديدة (دفع، توليد محتوى، إلخ)
-        `;
-      }
+    // تشغيل تسجيل الدخول تلقائياً
+    window.onload = login;
+
+    function showSection(section) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const output = document.getElementById('chatOutput');
+      output.innerHTML += `<p><strong>أنت:</strong> ${input.value}</p>`;
+      output.innerHTML += `<p><strong>P.ai:</strong> هذا رد تجريبي. الميزة قيد التطوير...</p>`;
+      input.value = '';
     }
   </script>
 </body>
