@@ -3,89 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>P.ai Creator</title>
+  <title>P.ai Creator - Test Payment</title>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #0f0f1a; color: #eee; margin:0; padding:0; }
-    header { background: #1a1a2e; padding:15px; text-align:center; }
-    nav { background:#16213e; padding:10px; overflow-x:auto; white-space:nowrap; }
-    button { padding:10px 16px; margin:5px; background:#f4a261; color:black; border:none; border-radius:8px; }
-    .section { display:none; padding:20px; }
-    .active { display:block; }
-    #chatOutput { margin-top:15px; line-height:1.6; }
-    .user { color:#a0d8ff; }
-    .ai { color:#f4a261; }
+    body { font-family: Arial, sans-serif; background: #0f0f1a; color: #fff; text-align: center; padding: 80px 20px; }
+    button { padding: 20px 50px; font-size: 22px; background: #22c55e; color: black; border: none; border-radius: 15px; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>P.ai Creator</h1>
-    <p>منصة الذكاء الاصطناعي الشاملة</p>
-  </header>
-
-  <nav>
-    <button onclick="showSection('home')">🏠 الرئيسية</button>
-    <button onclick="showSection('chat')">💬 دردشة AI</button>
-    <button onclick="showSection('image')">🖼️ توليد صور</button>
-    <button onclick="showSection('video')">🎥 توليد فيديو</button>
-    <button onclick="showSection('library')">📚 مكتبتي</button>
-    <button onclick="showSection('subscribe')">⭐ الاشتراكات</button>
-  </nav>
-
-  <div id="home" class="section active">
-    <h2>مرحباً في P.ai Creator</h2>
-    <p>اختر الخدمة التي تريدها من القائمة أعلاه</p>
-  </div>
-
-  <div id="chat" class="section">
-    <h2>💬 خبير الدردشة الذكي</h2>
-    <div id="chatOutput"></div>
-    <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا..." style="width:70%; padding:12px;">
-    <button onclick="sendMessage()">إرسال</button>
-  </div>
+  <h1>اختبار الدفع - الخطوة 10</h1>
+  <button onclick="makePayment()">اضغط هنا للدفع 0.01 Pi</button>
+  <div id="status" style="margin-top:40px; font-size:18px;"></div>
 
   <script>
     Pi.init({ version: "2.0", sandbox: true });
 
-    let currentUser = null;
+    async function makePayment() {
+      const status = document.getElementById('status');
+      status.innerHTML = "جاري الدفع...";
 
-    async function initPi() {
+      const paymentData = {
+        amount: 0.01,
+        memo: "اختبار إنهاء الخطوة 10",
+        metadata: { purpose: "developer_checklist" }
+      };
+
+      const callbacks = {
+        onReadyForServerApproval: () => status.innerHTML += "<br>✅ انتظر التأكيد",
+        onReadyForServerCompletion: (pid, txid) => {
+          status.innerHTML = `🎉 نجح الدفع!<br>TxID: ${txid}<br><br>الآن يجب أن تكتمل الخطوة 10`;
+        },
+        onCancel: () => status.innerHTML = "❌ تم الإلغاء",
+        onError: (e) => status.innerHTML = "❌ خطأ: " + e.message
+      };
+
       try {
-        const auth = await Pi.authenticate(['username']);
-        currentUser = auth;
-      } catch(e) {}
-    }
-
-    window.onload = initPi;
-
-    function showSection(id) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-    }
-
-    function sendMessage() {
-      const input = document.getElementById('chatInput');
-      const output = document.getElementById('chatOutput');
-      const message = input.value.trim();
-      
-      if (!message) return;
-
-      output.innerHTML += `<p class="user"><strong>أنت:</strong> ${message}</p>`;
-
-      // ردود ذكية بسيطة
-      let reply = "أنا P.ai، مساعدك الذكي. كيف يمكنني مساعدتك اليوم؟";
-      
-      if (message.includes("مرحبا") || message.includes("هاي")) reply = "مرحبا! سعيد بتواجدك 😊";
-      else if (message.includes("كيف حالك")) reply = "بخير شكراً! وأنت؟";
-      else if (message.includes("صورة")) reply = "هل تريد مني توليد صورة؟ اذهب إلى قسم 'توليد صور'";
-      else if (message.includes("فيديو")) reply = "يمكنني مساعدتك في أفكار فيديوهات. ماذا تريد؟";
-
-      setTimeout(() => {
-        output.innerHTML += `<p class="ai"><strong>P.ai:</strong> ${reply}</p>`;
-        output.scrollTop = output.scrollHeight;
-      }, 800);
-
-      input.value = '';
+        await Pi.createPayment(paymentData, callbacks);
+      } catch (e) {
+        status.innerHTML = "❌ فشل: " + e.message;
+      }
     }
   </script>
 </body>
