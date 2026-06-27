@@ -3,31 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>P.ai Creator - منصة صناعة المحتوى</title>
+  <title>P.ai Creator</title>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f0f0f;
-      color: #fff;
-      text-align: center;
-      padding: 50px 20px;
+    body { font-family: Arial, sans-serif; background: #0a0a0a; color: #fff; text-align: center; padding: 40px 20px; }
+    h1 { color: #f4a261; }
+    button { 
+      padding: 15px 25px; margin: 10px; font-size: 17px; 
+      background: #f4a261; color: black; border: none; border-radius: 10px; cursor: pointer;
     }
-    button {
-      padding: 15px 30px;
-      font-size: 18px;
-      background: #f4a261;
-      color: black;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 20px;
-    }
-    button:hover { background: #e76f51; }
+    #status { margin-top: 20px; font-size: 16px; min-height: 50px; }
   </style>
 </head>
 <body>
-  <h1>مرحباً بك في منصة P.ai Creator</h1>
+  <h1>P.ai Creator</h1>
   <p>منصة الذكاء الاصطناعي لصناعة المحتوى</p>
 
   <button onclick="loginWithPi()">تسجيل الدخول بحساب Pi</button>
@@ -36,65 +25,64 @@
   <div id="status"></div>
 
   <script>
-    let currentUser;
+    Pi.init({ 
+      version: "2.0",
+      sandbox: true   // مهم جداً للـ Testnet
+    });
 
-    // تهيئة Pi SDK
-    Pi.init({ version: "2.0" });
+    let currentUser = null;
 
     async function loginWithPi() {
       const status = document.getElementById('status');
-      status.innerHTML = "جاري تسجيل الدخول...";
+      status.textContent = "جاري تسجيل الدخول...";
 
       try {
         const scopes = ['payments', 'username'];
-        const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
         
-        currentUser = auth;
-        status.innerHTML = `✅ تم تسجيل الدخول بنجاح!<br>مرحباً ${auth.user.username}`;
-        console.log("User:", auth.user);
-      } catch (error) {
-        status.innerHTML = "❌ فشل تسجيل الدخول: " + error.message;
-        console.error(error);
-      }
-    }
+        const auth = await Pi.authenticate(scopes, (payment) => {
+          console.log("Incomplete payment:", payment);
+        });
 
-    function onIncompletePaymentFound(payment) {
-      console.log("Incomplete payment:", payment);
-      // يمكنك إكمال أو إلغاء الدفع هنا
+        currentUser = auth;
+        status.innerHTML = `✅ تم تسجيل الدخول بنجاح!<br>مرحباً ${auth.user.username} <span style="color:green">✓</span>`;
+      } catch (err) {
+        status.innerHTML = `❌ خطأ في تسجيل الدخول: ${err.message}`;
+        console.error(err);
+      }
     }
 
     async function makePayment() {
+      const status = document.getElementById('status');
+      
       if (!currentUser) {
-        alert("يرجى تسجيل الدخول أولاً");
+        status.textContent = "❌ يرجى تسجيل الدخول أولاً";
         return;
       }
 
-      const status = document.getElementById('status');
-      status.innerHTML = "جاري إنشاء عملية الدفع...";
+      status.textContent = "جاري إعداد الدفع...";
 
       const paymentData = {
-        amount: 1,           // 1 Pi (يمكنك تغييره)
-        memo: "اختبار دفع في P.ai Creator",
-        metadata: { item: "test_content", user: currentUser.user.username }
+        amount: 0.01,   // مبلغ صغير جداً للاختبار
+        memo: "اختبار P.ai Creator",
+        metadata: { test: true, user: currentUser.user.username }
       };
 
-      const paymentCallbacks = {
+      const callbacks = {
         onReadyForServerApproval: (paymentId) => {
-          console.log("Payment ready for approval:", paymentId);
-          status.innerHTML += "<br>✅ تم إعداد الدفع، انتظر التأكيد...";
+          console.log("Approval:", paymentId);
+          status.innerHTML += "<br>✅ جاري انتظار تأكيدك...";
         },
         onReadyForServerCompletion: (paymentId, txid) => {
-          console.log("Payment completed:", paymentId, txid);
-          status.innerHTML = `🎉 تم الدفع بنجاح!<br>Transaction ID: ${txid}`;
+          status.innerHTML = `🎉 نجح الدفع!<br>TxID: ${txid}`;
         },
-        onCancel: () => status.innerHTML = "❌ تم إلغاء الدفع",
-        onError: (error) => status.innerHTML = "❌ خطأ: " + error.message
+        onCancel: () => status.textContent = "❌ تم إلغاء العملية",
+        onError: (error) => status.textContent = `❌ خطأ: ${error.message}`
       };
 
       try {
-        await Pi.createPayment(paymentData, paymentCallbacks);
-      } catch (error) {
-        status.innerHTML = "❌ خطأ في الدفع: " + error.message;
+        await Pi.createPayment(paymentData, callbacks);
+      } catch (err) {
+        status.textContent = `❌ فشل إنشاء الدفع: ${err.message}`;
       }
     }
   </script>
