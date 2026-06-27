@@ -6,13 +6,23 @@
   <title>P.ai Creator</title>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #0a0a0a; color: #fff; text-align: center; padding: 40px 20px; }
-    h1 { color: #f4a261; }
-    button { 
-      padding: 15px 25px; margin: 10px; font-size: 17px; 
-      background: #f4a261; color: black; border: none; border-radius: 10px; cursor: pointer;
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #0a0a0a; 
+      color: #fff; 
+      text-align: center; 
+      padding: 50px 20px; 
     }
-    #status { margin-top: 20px; font-size: 16px; min-height: 50px; }
+    button { 
+      padding: 15px 30px; 
+      margin: 15px; 
+      font-size: 18px; 
+      background: #f4a261; 
+      color: black; 
+      border: none; 
+      border-radius: 10px; 
+    }
+    #status { margin: 30px; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -20,69 +30,29 @@
   <p>منصة الذكاء الاصطناعي لصناعة المحتوى</p>
 
   <button onclick="loginWithPi()">تسجيل الدخول بحساب Pi</button>
-  <button onclick="makePayment()">دفع 1 Pi (اختبار)</button>
 
   <div id="status"></div>
 
   <script>
-    Pi.init({ 
-      version: "2.0",
-      sandbox: true   // مهم جداً للـ Testnet
-    });
-
-    let currentUser = null;
+    Pi.init({ version: "2.0", sandbox: true });
 
     async function loginWithPi() {
       const status = document.getElementById('status');
-      status.textContent = "جاري تسجيل الدخول...";
+      status.innerHTML = "جاري تسجيل الدخول...";
 
       try {
-        const scopes = ['payments', 'username'];
+        const scopes = ['username'];   // فقط username في البداية
+        const auth = await Pi.authenticate(scopes);
         
-        const auth = await Pi.authenticate(scopes, (payment) => {
-          console.log("Incomplete payment:", payment);
-        });
-
-        currentUser = auth;
-        status.innerHTML = `✅ تم تسجيل الدخول بنجاح!<br>مرحباً ${auth.user.username} <span style="color:green">✓</span>`;
+        status.innerHTML = `
+          ✅ <strong>تم تسجيل الدخول بنجاح!</strong><br><br>
+          اسم المستخدم: <strong>${auth.user.username}</strong><br>
+          الرقم: ${auth.user.uid}
+        `;
+        console.log("✅ Success:", auth);
       } catch (err) {
-        status.innerHTML = `❌ خطأ في تسجيل الدخول: ${err.message}`;
+        status.innerHTML = `❌ خطأ: ${err.message}`;
         console.error(err);
-      }
-    }
-
-    async function makePayment() {
-      const status = document.getElementById('status');
-      
-      if (!currentUser) {
-        status.textContent = "❌ يرجى تسجيل الدخول أولاً";
-        return;
-      }
-
-      status.textContent = "جاري إعداد الدفع...";
-
-      const paymentData = {
-        amount: 0.01,   // مبلغ صغير جداً للاختبار
-        memo: "اختبار P.ai Creator",
-        metadata: { test: true, user: currentUser.user.username }
-      };
-
-      const callbacks = {
-        onReadyForServerApproval: (paymentId) => {
-          console.log("Approval:", paymentId);
-          status.innerHTML += "<br>✅ جاري انتظار تأكيدك...";
-        },
-        onReadyForServerCompletion: (paymentId, txid) => {
-          status.innerHTML = `🎉 نجح الدفع!<br>TxID: ${txid}`;
-        },
-        onCancel: () => status.textContent = "❌ تم إلغاء العملية",
-        onError: (error) => status.textContent = `❌ خطأ: ${error.message}`
-      };
-
-      try {
-        await Pi.createPayment(paymentData, callbacks);
-      } catch (err) {
-        status.textContent = `❌ فشل إنشاء الدفع: ${err.message}`;
       }
     }
   </script>
