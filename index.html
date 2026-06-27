@@ -8,21 +8,30 @@
   <style>
     body { 
       font-family: Arial, sans-serif; 
-      background: #0a0a0a; 
+      background: linear-gradient(135deg, #0a0a0a, #1a1a2e); 
       color: #fff; 
       text-align: center; 
-      padding: 50px 20px; 
+      padding: 40px 20px; 
+      min-height: 100vh;
     }
+    h1 { color: #f4a261; margin-bottom: 10px; }
     button { 
       padding: 15px 30px; 
-      margin: 15px; 
-      font-size: 18px; 
+      margin: 12px; 
+      font-size: 17px; 
       background: #f4a261; 
       color: black; 
       border: none; 
-      border-radius: 10px; 
+      border-radius: 12px; 
+      cursor: pointer;
     }
-    #status { margin: 30px; font-size: 16px; }
+    #status { 
+      margin: 25px auto; 
+      padding: 15px; 
+      background: rgba(255,255,255,0.1); 
+      border-radius: 10px; 
+      max-width: 400px;
+    }
   </style>
 </head>
 <body>
@@ -30,29 +39,42 @@
   <p>منصة الذكاء الاصطناعي لصناعة المحتوى</p>
 
   <button onclick="loginWithPi()">تسجيل الدخول بحساب Pi</button>
+  <button onclick="showUserInfo()" id="userBtn" style="display:none;">عرض معلوماتي</button>
 
   <div id="status"></div>
 
   <script>
     Pi.init({ version: "2.0", sandbox: true });
+    let currentUser = null;
 
     async function loginWithPi() {
       const status = document.getElementById('status');
       status.innerHTML = "جاري تسجيل الدخول...";
 
       try {
-        const scopes = ['username'];   // فقط username في البداية
-        const auth = await Pi.authenticate(scopes);
-        
+        const auth = await Pi.authenticate(['username']);
+        currentUser = auth;
+
         status.innerHTML = `
           ✅ <strong>تم تسجيل الدخول بنجاح!</strong><br><br>
-          اسم المستخدم: <strong>${auth.user.username}</strong><br>
-          الرقم: ${auth.user.uid}
+          <strong>اسم المستخدم:</strong> ${auth.user.username}<br>
+          <strong>الرقم:</strong> ${auth.user.uid}
         `;
-        console.log("✅ Success:", auth);
+
+        document.getElementById('userBtn').style.display = 'inline-block';
       } catch (err) {
-        status.innerHTML = `❌ خطأ: ${err.message}`;
-        console.error(err);
+        status.innerHTML = `❌ خطأ: ${err.message || err}`;
+      }
+    }
+
+    function showUserInfo() {
+      const status = document.getElementById('status');
+      if (currentUser) {
+        status.innerHTML = `
+          مرحباً <strong>${currentUser.user.username}</strong> 👋<br><br>
+          التطبيق يعمل الآن!<br>
+          يمكننا إضافة ميزات جديدة (دفع، توليد محتوى، إلخ)
+        `;
       }
     }
   </script>
