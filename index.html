@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sona AI Creator</title>
 
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
@@ -10,9 +9,9 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial;
       background: #0f0f1a;
       color: white;
+      font-family: Arial;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -22,70 +21,62 @@
 
     .box {
       background: #1c1c2e;
-      padding: 30px;
-      border-radius: 20px;
+      padding: 25px;
+      border-radius: 15px;
       width: 90%;
       max-width: 400px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
 
     button {
-      background: #6c5ce7;
-      color: white;
-      border: none;
       padding: 15px;
       width: 100%;
+      border: none;
       border-radius: 10px;
+      background: #6c5ce7;
+      color: white;
       font-size: 16px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-
-    button:hover {
-      background: #7f6df2;
+      margin-top: 15px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="box">
-    <h1>🎬 Sona AI Creator</h1>
-    <p>Login with your Pi account to continue</p>
+<div class="box">
+  <h2>🎬 Sona AI Creator</h2>
+  <p id="status">Loading Pi SDK...</p>
+  <button onclick="login()">Login with Pi</button>
+</div>
 
-    <button onclick="login()">Login with Pi</button>
-
-    <p id="status"></p>
-  </div>
-
-  <script>
-    const Pi = window.Pi;
+<script>
+  window.addEventListener("load", function () {
+    if (!window.Pi) {
+      document.getElementById("status").innerText =
+        "Pi SDK not detected. Open in Pi Browser.";
+      return;
+    }
 
     Pi.init({ version: "2.0" });
+    document.getElementById("status").innerText =
+      "Ready to login with Pi ✔";
+  });
 
-    async function login() {
-      try {
-        const scopes = ['username', 'payments'];
+  async function login() {
+    try {
+      const scopes = ['username', 'payments'];
 
-        const auth = await Pi.authenticate(scopes, function(payment) {
-          console.log(payment);
-        });
+      const auth = await Pi.authenticate(scopes);
 
-        document.getElementById("status").innerText =
-          "Welcome " + auth.user.username;
+      document.getElementById("status").innerText =
+        "Welcome " + auth.user.username;
 
-        // هنا سننتقل للصفحة الرئيسية لاحقًا
-        setTimeout(() => {
-          window.location.href = "home.html";
-        }, 1500);
-
-      } catch (error) {
-        console.error(error);
-        document.getElementById("status").innerText =
-          "Login failed, try again";
-      }
+    } catch (e) {
+      console.log(e);
+      document.getElementById("status").innerText =
+        "Login failed - try again";
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
